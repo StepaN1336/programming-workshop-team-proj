@@ -20,7 +20,7 @@
     <header class="header">
         <div class="container">
             <div class="header__user">Користувач: <span class="header__username"></span></div>
-            <button class="header__exit button-grey">Вийти</button>
+            <button class="header__exit button-grey">Увійти</button>
         </div>
     </header>
     <main class="main">
@@ -32,21 +32,36 @@
                 </div>
                 <div class="image-processing__options">
                     <h1 class="image-processing__title">Обробка зображень</h1>
+
                     <h2 class="image-processing__method-title">Спосіб реалізації бітової карти</h2>
-                    <select class="image-processing__method">
-                        <option value="quadrant">Зональний колір</option>
-                        <option value="grid">Сітка</option>
-                        <option value="circle">Коло по центру</option>
-                    </select>
+                    <div class="image-processing__select image-processing__method-select">
+                        <div class="image-processing__select-trigger">
+                            <span class="image-processing__select-text">Зональний колір</span>
+                            <span class="image-processing__select-arrow">▼</span>
+                        </div>
+                        <div class="image-processing__options-list">
+                            <div class="image-processing__option" data-value="quadrant">Зональний колір</div>
+                            <div class="image-processing__option" data-value="grid">Сітка</div>
+                            <div class="image-processing__option" data-value="circle">Коло по центру</div>
+                        </div>
+                    </div>
+
                     <h2 class="image-processing__color-title">Кольори</h2>
-                    <select class="image-processing__color">
-                        <option value="blue-green">Від синього до зеленого</option>
-                        <option value="red-blue">Від червоного до синього</option>
-                        <option value="green-red">Від зеленого до червоного</option>
-                    </select>
+                    <div class="image-processing__select image-processing__color-select">
+                        <div class="image-processing__select-trigger">
+                            <span class="image-processing__select-text">Від синього до зеленого</span>
+                            <span class="image-processing__select-arrow">▼</span>
+                        </div>
+                        <div class="image-processing__options-list">
+                            <div class="image-processing__option" data-value="blue-green">Від синього до зеленого</div>
+                            <div class="image-processing__option" data-value="red-blue">Від червоного до синього</div>
+                            <div class="image-processing__option" data-value="green-red">Від зеленого до червоного</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
+
         <section class="steganography">
             <div class="container">
                 <div class="steganography__message-input-wrapper">
@@ -62,6 +77,7 @@
                 </div>
             </div>
         </section>
+
         <section class="history">
             <div class="container">
                 <h2 class="history__title">Історія:</h2>
@@ -89,6 +105,7 @@
             <button class="footer__authors button-grey">Автори програми</button>
         </div>
     </footer>
+    <script src="js/index.js"></script>
 </body>
 
 </html>
