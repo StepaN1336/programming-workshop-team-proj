@@ -293,17 +293,17 @@ body {
 
 .underline-short::after {
     width: 182px;
-    left: 120px;
+    left: 130px;
 }
 
 .underline-medium::after {
     width: 204px;
-    left: 110px
+    left: 120px
 }
 
 .underline-long::after {
     width: 272px;
-    left: 76px;
+    left: 86px;
 }
 
 .history__last-files,
