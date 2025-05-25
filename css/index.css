@@ -65,6 +65,9 @@ body {
 .image-processing__open-btn {
     min-width: 374px;
     min-height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .image-processing__options {
