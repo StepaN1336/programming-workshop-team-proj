@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uk"> 
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Практикум Командний</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css"> 
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header__user">Користувач: <span class="header__username"></span></div>
+            <button class="header__exit button-grey">Увійти</button>
+        </div>
+    </header>
+    <main class="main">
+        <section class="image-processing">
+            <div class="container">
+                <div class="image-processing__input">
+                    <div class="image-processing__placeholder"></div>
+                    <label class="button-black image-processing__open-btn" for="fileInput">Відкрити BMP</label>
+                    <input type="file" id="fileInput" accept=".bmp" style="display:none;">
+                </div>
+                <div class="image-processing__options">
+                    <h1 class="image-processing__title">Обробка зображень</h1>
+
+                    <h2 class="image-processing__method-title">Спосіб реалізації бітової карти</h2>
+                    <div class="image-processing__select image-processing__method-select">
+                        <div class="image-processing__select-trigger">
+                            <span class="image-processing__select-text">Зональний колір</span>
+                            <span class="image-processing__select-arrow">▼</span>
+                        </div>
+                        <div class="image-processing__options-list">
+                            <div class="image-processing__option" data-value="quadrant">Зональний колір</div>
+                            <div class="image-processing__option" data-value="grid">Сітка</div>
+                            <div class="image-processing__option" data-value="circle">Коло по центру</div>
+                        </div>
+                    </div>
+
+                    <h2 class="image-processing__color-title">Кольори</h2>
+                    <div class="image-processing__select image-processing__color-select">
+                        <div class="image-processing__select-trigger">
+                            <span class="image-processing__select-text">Від синього до зеленого</span>
+                            <span class="image-processing__select-arrow">▼</span>
+                        </div>
+                        <div class="image-processing__options-list">
+                            <div class="image-processing__option" data-value="blue-green">Від синього до зеленого</div>
+                            <div class="image-processing__option" data-value="red-blue">Від червоного до синього</div>
+                            <div class="image-processing__option" data-value="green-red">Від зеленого до червоного</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="steganography">
+            <div class="container">
+                <div class="steganography__message-input-wrapper">
+                    <h2 class="steganography__title">Стеганографія</h2>
+                    <p class="steganography__input-guide">Введіть повідомлення, яке ви хочете приховати:</p>
+                    <textarea class="steganography__input" placeholder="Message"></textarea>
+                    <button class="steganography__input-btn button-black">Приховати Повідомлення</button>
+                </div>
+                <div class="steganography__message-output-wrapper">
+                    <button class="steganography__output-btn button-white">Витягти Повідомлення</button>
+                    <p class="steganography__output-guide">Ваше приховане повідомлення:</p>
+                    <div class="steganography__output-placeholder"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="history">
+            <div class="container">
+                <h2 class="history__title">Історія:</h2>
+                <div class="history__list">
+                    <div class="history__item">
+                        <h3 class="history__item-title underline-short">Останні файли:</h3>
+                        <div class="history__last-files"></div>
+                    </div>
+                    <div class="history__item">
+                        <h3 class="history__item-title underline-medium">Останні патерни:</h3>
+                        <div class="history__last-patterns"></div>
+                    </div>
+                    <div class="history__item">
+                        <h3 class="history__item-title underline-long">Останні повідомлення:</h3>
+                        <div class="history__last-messages"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="container">
+            <button class="footer__how-to-use button-grey">Як користуватись?</button>
+            <button class="footer__program-info button-grey">Інформація про програму</button>
+            <button class="footer__authors button-grey">Автори програми</button>
+        </div>
+    </footer>
+    <script src="js/main.js" type="module"></script>
+</body>
+
+</html>

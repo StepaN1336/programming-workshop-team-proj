@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> login
+    <title>Авторизація - Практикум Командний</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css"> 
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Практикум Командний</h1>
+            
+            <div class="auth-form" id="loginForm">
+                <h2 class="form-title">Вхід в систему</h2>
+                <form id="loginFormElement">
+                    <div class="input-group">
+                        <label for="loginUsername">Логін:</label>
+                        <input type="text" id="loginUsername" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="loginPassword">Пароль:</label>
+                        <input type="password" id="loginPassword" name="password" required>
+                    </div>
+                    <button type="submit" class="button-black auth-submit">Увійти</button>
+                </form>
+                <p class="switch-form">
+                    Немає акаунту? <span class="switch-link" onclick="switchToRegister()">Зареєструватися</span>
+                </p>
+            </div>
+
+            <div class="auth-form hidden" id="registerForm">
+                <h2 class="form-title">Реєстрація</h2>
+                <form id="registerFormElement">
+                    <div class="input-group">
+                        <label for="registerUsername">Логін:</label>
+                        <input type="text" id="registerUsername" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="registerPassword">Пароль:</label>
+                        <input type="password" id="registerPassword" name="password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="registerPasswordConfirm">Підтвердити пароль:</label>
+                        <input type="password" id="registerPasswordConfirm" name="passwordConfirm" required>
+                    </div>
+                    <button type="submit" class="button-black auth-submit">Зареєструватися</button>
+                </form>
+                <p class="switch-form">
+                    Вже є акаунт? <span class="switch-link" onclick="switchToLogin()">Увійти</span>
+                </p>
+            </div>
+
+            <div id="errorMessage" class="error-message hidden"></div>
+            <div id="successMessage" class="success-message hidden"></div>
+        </div>
+    </div>
+
+    <script src="js/index.js" type="module"></script>
+</body>
+
+</html>
