@@ -180,6 +180,13 @@ body {
     display: block;
 }
 
+.image-processing__process-btn {
+    margin-top: 147px;
+    min-width: 439px;
+    min-height: 56px;
+    font-weight: 700;
+}
+
 /* Main Section: Steganography */
 .steganography .container {
     display: flex;
