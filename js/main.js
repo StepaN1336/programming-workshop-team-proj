@@ -10,6 +10,7 @@ const state = {
   colorMethod: "blue-green",
   imageMethod: "quadrant"
 };
+const currentUserGlobal = getCurrentUser();
 
 // Головна ініціалізація
 document.addEventListener("DOMContentLoaded", () => {
@@ -25,15 +26,19 @@ function checkAuth() {
     window.location.href = "index.html";
     return false;
   }
-  
+
   const usernameEl = document.querySelector(".header__username");
   const exitBtn = document.querySelector(".header__exit");
-  
+
   if (usernameEl) usernameEl.textContent = user.username;
   if (exitBtn) {
     exitBtn.textContent = "Вийти";
     exitBtn.onclick = logout;
   }
+
+  const history = loadUserHistory(currentUserGlobal);
+  if (history) renderHistory(history);
+
   return true;
 }
 
@@ -57,7 +62,7 @@ function initSelects() {
         const value = option.dataset.value;
         text.textContent = option.textContent;
         select.classList.remove("open");
-        
+
         if (["blue-green", "red-blue", "green-red"].includes(value)) {
           state.colorMethod = value;
         } else if (["quadrant", "grid", "circle"].includes(value)) {
@@ -93,13 +98,11 @@ function displayImage(blob, selector, alt, caption = "") {
   if (!container) return;
 
   const url = URL.createObjectURL(blob);
-  const captionHtml = caption ? `<p style="text-align: center; margin-top: 10px;">${caption}</p>` : "";
-  
+
   container.style.cssText = "display: flex; align-items: center; justify-content: center;";
   container.innerHTML = `
     <div>
-      <img src="${url}" alt="${alt}" style="max-width: 100%; max-height: 100%;" />
-      ${captionHtml}
+      <img src="${url}" alt="${alt}" style="max-width: 550px; max-height: 400px;" />
     </div>
   `;
 }
@@ -117,6 +120,7 @@ async function handleFileUpload(event) {
 
   if (await parseBMP(file)) {
     displayImage(file, ".image-processing__placeholder", "BMP Preview");
+    saveToHistory(currentUserGlobal, "bmpFiles", state.fileName);
   } else {
     alert("Помилка при обробці BMP файлу");
   }
@@ -127,7 +131,7 @@ async function parseBMP(blob) {
   try {
     const buffer = await blob.arrayBuffer();
     const view = new DataView(buffer);
-    
+
     if (view.getUint16(0, true) !== 0x4D42) throw new Error("Не валідний BMP файл");
 
     state.bmpHeader = {
@@ -160,9 +164,10 @@ async function handleCreateImage() {
 
   const imageData = generateImage();
   const blob = await createBMPBlob(imageData);
-  
+
   displayImage(blob, ".image-processing__placeholder", "Processed BMP", "Оброблене зображення");
   downloadBlob(blob, `generated_${state.fileName}`);
+  saveToHistory(currentUserGlobal, "modes", state.imageMethod + " / " + state.colorMethod);
 }
 
 // Генерація зображення
@@ -175,7 +180,7 @@ function generateImage() {
     for (let x = 0; x < width; x++) {
       const idx = y * rowSize + x * 3;
       const colors = getPixelColor(x, y, width, height);
-      
+
       data[idx] = colors.b;     // BMP uses BGR
       data[idx + 1] = colors.g;
       data[idx + 2] = colors.r;
@@ -188,16 +193,16 @@ function generateImage() {
 function getPixelColor(x, y, width, height) {
   const nx = x / width, ny = y / height;
   const base = getBaseColors(x, y, width, height, nx, ny);
-  
+
   const colorMap = {
     "blue-green": { r: 0, g: base.primary, b: base.secondary },
     "red-blue": { r: base.primary, g: 0, b: base.secondary },
     "green-red": { r: base.secondary, g: base.primary, b: 0 }
   };
-  
-  const colors = colorMap[state.colorMethod] || 
+
+  const colors = colorMap[state.colorMethod] ||
     { r: (base.primary + base.secondary) / 2, g: (base.primary + base.secondary) / 2, b: (base.primary + base.secondary) / 2 };
-  
+
   return {
     r: Math.min(255, Math.max(0, Math.floor(colors.r))),
     g: Math.min(255, Math.max(0, Math.floor(colors.g))),
@@ -218,7 +223,7 @@ function getBaseColors(x, y, width, height, nx, ny) {
     grid: () => {
       const gridSize = Math.max(1, Math.floor(Math.min(width, height) / 8));
       const isEven = (Math.floor(x / gridSize) + Math.floor(y / gridSize)) % 2 === 0;
-      return isEven ? 
+      return isEven ?
         { primary: Math.floor(nx * 255), secondary: Math.floor(ny * 255) } :
         { primary: Math.floor((Math.sin(nx * Math.PI * 2) + 1) * 127.5), secondary: Math.floor((Math.cos(ny * Math.PI * 2) + 1) * 127.5) };
     },
@@ -229,7 +234,7 @@ function getBaseColors(x, y, width, height, nx, ny) {
       return { primary: Math.floor((1 - dist) * 255), secondary: Math.floor(dist * 255) };
     }
   };
-  
+
   return methods[state.imageMethod]() || { primary: Math.floor(nx * 255), secondary: Math.floor(ny * 255) };
 }
 
@@ -252,7 +257,7 @@ function hideMessage(message, imageData) {
   const msgBytes = new TextEncoder().encode(message);
   const msgWithTerm = new Uint8Array(msgBytes.length + 1);
   msgWithTerm.set(msgBytes);
-  
+
   if (msgWithTerm.length * 8 > imageData.length) {
     throw new Error(`Повідомлення занадто довге. Потрібно ${msgWithTerm.length * 8} бітів, доступно ${imageData.length}`);
   }
@@ -276,7 +281,7 @@ async function extractMessage(blob) {
     const buffer = await blob.arrayBuffer();
     const view = new DataView(buffer);
     const data = new Uint8Array(buffer.slice(view.getUint32(10, true)));
-    
+
     const bytes = [];
     let bitIdx = 0;
 
@@ -291,7 +296,7 @@ async function extractMessage(blob) {
     }
 
     if (bytes.length === 0) return null;
-    
+
     const nonPrintable = bytes.filter(b => b < 32 && ![9, 10, 13].includes(b)).length;
     if (nonPrintable > bytes.length * 0.3) return null;
 
@@ -312,6 +317,7 @@ async function handleHideMessage() {
     const blob = await createBMPBlob(modifiedData);
     downloadBlob(blob, `hidden_message_${state.fileName}`);
     alert("Повідомлення приховано!");
+    saveToHistory(currentUserGlobal, "embeddedMessages", message);
   } catch (error) {
     alert("Помилка: " + error.message);
   }
@@ -324,16 +330,61 @@ async function handleExtractMessage() {
   try {
     const message = await extractMessage(state.bmpBlob);
     const output = document.querySelector(".steganography__output-placeholder");
-    
+
     if (output) {
+      saveToHistory(currentUserGlobal, "extractedMessages", message);
       output.style.cssText = "display: flex; align-items: left; justify-content: left; padding: 20px;";
-      output.innerHTML = message ? 
-        `<p>${message}</p>` : 
+      output.innerHTML = message ?
+        `<p>${message}</p>` :
         "<p>Приховане повідомлення не знайдено</p>";
     }
   } catch (error) {
     alert("Помилка витягування: " + error.message);
   }
 }
+
+function saveToHistory(username, key, entry) {
+  const raw = localStorage.getItem("userHistories") || "{}";
+  const histories = JSON.parse(raw);
+
+  if (!histories[username]) {
+    histories[username] = { history: { bmpFiles: [], modes: [], embeddedMessages: [], extractedMessages: [] } };
+  }
+
+  const list = histories[username].history[key];
+
+  list.unshift(entry);
+  if (list.length > 3) list.pop();
+
+  localStorage.setItem("userHistories", JSON.stringify(histories));
+}
+
+function loadUserHistory(username) {
+  const raw = localStorage.getItem("userHistories") || "{}";
+  const histories = JSON.parse(raw);
+  return histories[username]?.history || null;
+}
+
+function renderHistory(history) {
+  const lastFiles = document.querySelector(".history__last-files");
+  const lastPatterns = document.querySelector(".history__last-patterns");
+  const lastMessages = document.querySelector(".history__last-messages");
+
+  lastFiles.innerHTML = history.bmpFiles
+    .map(name => `<div class="history__entry">${name}</div>`)
+    .join("");
+
+  lastPatterns.innerHTML = history.modes
+    .map(mode => `<div class="history__entry">${mode}</div>`)
+    .join("");
+
+  lastMessages.innerHTML = [
+    ...history.embeddedMessages.map(msg => `<div class="history__entry">[Приховане повідомлення] ${msg}</div>`),
+    ...history.extractedMessages.map(msg => `<div class="history__entry">[Витягнуте повідомлення] ${msg}</div>`)
+  ]
+    .slice(0, 3)
+    .join("");
+}
+
 
 window.logout = logout;

@@ -1,7 +1,7 @@
-@import url(global.css); 
+@import url(global.css);
 
 body {
-    background-color: #d3d3d3;  
+    background-color: #d3d3d3;
 }
 
 /* Header */
@@ -321,6 +321,21 @@ body {
     border: 3px solid #eee;
     border-radius: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.history__entry {
+    background: #f2f2f2;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Footer */
