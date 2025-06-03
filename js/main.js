@@ -316,13 +316,29 @@ function getBaseColors(x, y, width, height, nx, ny) {
         secondary: Math.floor(((y >= hh) ? (1 - ny) : ny) * 255)
       };
     },
-    grid: () => {
-      const gridSize = Math.max(1, Math.floor(Math.min(width, height) / 8));
-      const isEven = (Math.floor(x / gridSize) + Math.floor(y / gridSize)) % 2 === 0;
-      return isEven ?
-        { primary: Math.floor(nx * 255), secondary: Math.floor(ny * 255) } :
-        { primary: Math.floor((Math.sin(nx * Math.PI * 2) + 1) * 127.5), secondary: Math.floor((Math.cos(ny * Math.PI * 2) + 1) * 127.5) };
-    },
+grid: () => {
+  const gridSize = Math.max(8, Math.floor(Math.min(width, height) / 16)); // Розмір клітинки сітки
+  const lineWidth = Math.max(1, Math.floor(gridSize / 8)); // Товщина ліній сітки
+  
+  // Перевіряємо, чи знаходимося на лінії сітки (горизонтальній або вертикальній)
+  const isOnVerticalLine = (x % gridSize) < lineWidth;
+  const isOnHorizontalLine = (y % gridSize) < lineWidth;
+  const isOnGridLine = isOnVerticalLine || isOnHorizontalLine;
+  
+  if (isOnGridLine) {
+    // Лінії сітки - темний колір
+    return { primary: 50, secondary: 50 };
+  } else {
+    // Клітинки сітки - світлий градієнт на основі позиції
+    const cellX = Math.floor(x / gridSize);
+    const cellY = Math.floor(y / gridSize);
+    const cellPattern = (cellX + cellY) % 2; // Шахматний патерн для різноманітності
+    
+    return cellPattern === 0 ?
+      { primary: Math.floor(180 + nx * 75), secondary: Math.floor(180 + ny * 75) } :
+      { primary: Math.floor(150 + (1-nx) * 75), secondary: Math.floor(150 + (1-ny) * 75) };
+  }
+},
     circle: () => {
       const cx = width / 2, cy = height / 2;
       const maxR = Math.sqrt(cx * cx + cy * cy);
