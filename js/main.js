@@ -2,6 +2,7 @@
 import { getCurrentUser, logout } from "./auth.js";
 
 // Глобальні змінні
+const currentUserGlobal = getCurrentUser();
 const state = {
   bmpBlob: null,
   bmpHeader: null,
@@ -10,7 +11,6 @@ const state = {
   colorMethod: "blue-green",
   imageMethod: "quadrant"
 };
-const currentUserGlobal = getCurrentUser();
 
 // Головна ініціалізація
 document.addEventListener("DOMContentLoaded", () => {
@@ -36,8 +36,11 @@ function checkAuth() {
     exitBtn.onclick = logout;
   }
 
-  const history = loadUserHistory(currentUserGlobal);
-  if (history) renderHistory(history);
+  const history = loadUserHistory(currentUserGlobal.username);
+  if (history) {
+    renderHistory(history);
+    restoreLastUsedOptions(currentUserGlobal.username);
+  }
 
   return true;
 }
@@ -65,8 +68,10 @@ function initSelects() {
 
         if (["blue-green", "red-blue", "green-red"].includes(value)) {
           state.colorMethod = value;
+          saveToHistory(currentUserGlobal.username, 'lastChosenColors', value);
         } else if (["quadrant", "grid", "circle"].includes(value)) {
           state.imageMethod = value;
+          saveToHistory(currentUserGlobal.username, 'lastChosenMethods', value)
         }
       };
     });
@@ -78,6 +83,49 @@ function initSelects() {
     });
   };
 }
+
+// Встановлення вибраного по selectElement селекта
+function setSelectByValue(selectElement, value) {
+  const text = selectElement.querySelector(".image-processing__select-text");
+  const options = selectElement.querySelectorAll(".image-processing__option");
+
+  options.forEach(option => {
+    if (option.dataset.value === value) {
+      text.textContent = option.textContent;
+      if (["blue-green", "red-blue", "green-red"].includes(value)) {
+        state.colorMethod = value;
+      } else if (["quadrant", "grid", "circle"].includes(value)) {
+        state.imageMethod = value;
+      }
+    }
+  });
+}
+
+// Відновлення останніх вибраних селектів
+function restoreLastUsedOptions(username) {
+  const lastColors = loadUserHistoryByKey(username, "lastChosenColors") || [];
+  const lastMethods = loadUserHistoryByKey(username, "lastChosenMethods") || [];
+  const lastFiles = loadUserHistoryByKey(username, "bmpFiles") || [];
+
+  const lastColor = lastColors[0] || null;
+  const lastMethod = lastMethods[0] || null;
+
+  const colorSelect = document.querySelector(".image-processing__color-select");
+  const methodSelect = document.querySelector(".image-processing__method-select");
+
+  if (lastColor && colorSelect) {
+    setSelectByValue(colorSelect, lastColor);
+  }
+
+  if (lastMethod && methodSelect) {
+    setSelectByValue(methodSelect, lastMethod);
+  }
+
+  if (lastMethod || lastColor) {
+    alert(`🔁 Відновлено останні налаштування. Перевірте, чи ви обрали той самий файл BMP: ${lastFiles[0]}`);
+  }
+}
+
 
 // Ініціалізація обробників подій
 function initEventListeners() {
@@ -120,7 +168,11 @@ async function handleFileUpload(event) {
 
   if (await parseBMP(file)) {
     displayImage(file, ".image-processing__placeholder", "BMP Preview");
-    saveToHistory(currentUserGlobal, "bmpFiles", state.fileName);
+    saveToHistory(currentUserGlobal.username, "bmpFiles", state.fileName);
+    const history = loadUserHistory(currentUserGlobal.username);
+    if (history) {
+      renderHistory(history);
+    }
   } else {
     alert("Помилка при обробці BMP файлу");
   }
@@ -167,7 +219,11 @@ async function handleCreateImage() {
 
   displayImage(blob, ".image-processing__placeholder", "Processed BMP", "Оброблене зображення");
   downloadBlob(blob, `generated_${state.fileName}`);
-  saveToHistory(currentUserGlobal, "modes", state.imageMethod + " / " + state.colorMethod);
+  saveToHistory(currentUserGlobal.username, "modes", [state.imageMethod, state.colorMethod]);
+  const history = loadUserHistory(currentUserGlobal.username);
+  if (history) {
+    renderHistory(history);
+  }
 }
 
 // Генерація зображення
@@ -317,7 +373,11 @@ async function handleHideMessage() {
     const blob = await createBMPBlob(modifiedData);
     downloadBlob(blob, `hidden_message_${state.fileName}`);
     alert("Повідомлення приховано!");
-    saveToHistory(currentUserGlobal, "embeddedMessages", message);
+    saveToHistory(currentUserGlobal.username, "embeddedMessages", message);
+    const history = loadUserHistory(currentUserGlobal.username);
+    if (history) {
+      renderHistory(history);
+    }
   } catch (error) {
     alert("Помилка: " + error.message);
   }
@@ -332,7 +392,11 @@ async function handleExtractMessage() {
     const output = document.querySelector(".steganography__output-placeholder");
 
     if (output) {
-      saveToHistory(currentUserGlobal, "extractedMessages", message);
+      saveToHistory(currentUserGlobal.username, "extractedMessages", message);
+      const history = loadUserHistory(currentUserGlobal.username);
+      if (history) {
+        renderHistory(history);
+      }
       output.style.cssText = "display: flex; align-items: left; justify-content: left; padding: 20px;";
       output.innerHTML = message ?
         `<p>${message}</p>` :
@@ -343,12 +407,13 @@ async function handleExtractMessage() {
   }
 }
 
+// Збереження історії взаємодії з користувачем по ключу key
 function saveToHistory(username, key, entry) {
   const raw = localStorage.getItem("userHistories") || "{}";
   const histories = JSON.parse(raw);
 
   if (!histories[username]) {
-    histories[username] = { history: { bmpFiles: [], modes: [], embeddedMessages: [], extractedMessages: [] } };
+    histories[username] = { history: { bmpFiles: [], modes: [], embeddedMessages: [], extractedMessages: [], lastChosenColors: [], lastChosenMethods: [] } };
   }
 
   const list = histories[username].history[key];
@@ -359,19 +424,28 @@ function saveToHistory(username, key, entry) {
   localStorage.setItem("userHistories", JSON.stringify(histories));
 }
 
+// Витягнення повної історії користувача
 function loadUserHistory(username) {
   const raw = localStorage.getItem("userHistories") || "{}";
   const histories = JSON.parse(raw);
   return histories[username]?.history || null;
 }
 
+// Витягнення історії користувача за ключем key
+function loadUserHistoryByKey(username, key) {
+  const raw = localStorage.getItem("userHistories") || "{}";
+  const histories = JSON.parse(raw);
+  return histories[username]?.history[key] || null;
+}
+
+// Рендер і накладання onclick функцій до кожного елемента історії
 function renderHistory(history) {
   const lastFiles = document.querySelector(".history__last-files");
   const lastPatterns = document.querySelector(".history__last-patterns");
   const lastMessages = document.querySelector(".history__last-messages");
 
   lastFiles.innerHTML = history.bmpFiles
-    .map(name => `<div class="history__entry">${name}</div>`)
+    .map(name => `<div class="history__entry" data-filename="${name}">${name}</div>`)
     .join("");
 
   lastPatterns.innerHTML = history.modes
@@ -379,12 +453,58 @@ function renderHistory(history) {
     .join("");
 
   lastMessages.innerHTML = [
-    ...history.embeddedMessages.map(msg => `<div class="history__entry">[Приховане повідомлення] ${msg}</div>`),
-    ...history.extractedMessages.map(msg => `<div class="history__entry">[Витягнуте повідомлення] ${msg}</div>`)
+    ...history.embeddedMessages.map(msg => `<div class="history__entry">[Приховане] ${msg}</div>`),
+    ...history.extractedMessages.map(msg => `<div class="history__entry">[Витягнуте] ${msg}</div>`)
   ]
     .slice(0, 3)
     .join("");
-}
 
+  lastFiles.querySelectorAll(".history__entry").forEach(entry => {
+    entry.addEventListener("click", () => {
+      const triggeredFileName = entry.dataset.filename;
+
+      if (state.fileName !== triggeredFileName) {
+        alert(`Щоб продовжити, будь ласка, вручну оберіть файл ${triggeredFileName}, який використовувався раніше.`);
+      }
+    });
+  });
+
+  lastPatterns.querySelectorAll(".history__entry").forEach(entry => {
+    entry.addEventListener("click", () => {
+      const value = entry.textContent.split(',');
+      const color = value[1] || null;
+      const method = value[0] || null;
+
+      const colorSelect = document.querySelector(".image-processing__color-select");
+      const methodSelect = document.querySelector(".image-processing__method-select");
+
+      saveToHistory(currentUserGlobal.username, 'lastChosenColors', color);
+      saveToHistory(currentUserGlobal.username, 'lastChosenMethods', method);
+
+      if (color && colorSelect) {
+        setSelectByValue(colorSelect, color);
+      }
+
+      if (method && methodSelect) {
+        setSelectByValue(methodSelect, method);
+      }
+    });
+  });
+
+  lastMessages.querySelectorAll(".history__entry").forEach(entry => {
+    entry.addEventListener("click", () => {
+      const message = entry.textContent.split(' ');
+      const output = document.querySelector(".steganography__output-placeholder");
+      const input = document.querySelector(".steganography__input");
+
+      if (message[0] === '[Приховане]' && output) {
+        output.style.cssText = "display: flex; align-items: left; justify-content: left; padding: 20px;";
+        output.innerHTML = `<p>${message[1]}</p>`;
+      } else if (message[0] === '[Витягнуте]' && input) {
+        input.value = message[1];
+      }
+    });
+  });
+}
 
 window.logout = logout;
