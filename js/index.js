@@ -30,20 +30,20 @@ function initializeAuthForms() {
 async function handleLogin(event) {
     event.preventDefault();
     
-    const username = document.getElementById('loginUsername').value.trim();
+    const username = document.getElementById('loginUsername').value.trim(); //отримує дані з полів форми
     const password = document.getElementById('loginPassword').value;
     
-    const errorDiv = document.getElementById('errorMessage');
+    const errorDiv = document.getElementById('errorMessage'); //блоки для повідомень
     const successDiv = document.getElementById('successMessage');
 
-    if (!username || !password) {
+    if (!username || !password) { //перевірка на пустий рядок
         showError('Будь ласка, заповніть всі поля', errorDiv, successDiv);
         return;
     }
     
     try {
-        const users = getStoredUsers();
-        const user = users.find(u => u.username === username && u.password === password);
+        const users = getStoredUsers(); //отримує всіх збережених користувачів
+        const user = users.find(u => u.username === username && u.password === password); //перевіряє чи сходяться
         
         if (user) {
             setCurrentUser({
@@ -76,12 +76,12 @@ async function handleRegister(event) {
     const errorDiv = document.getElementById('errorMessage');
     const successDiv = document.getElementById('successMessage');
 
-    if (!username || !password || !passwordConfirm) {
+    if (!username || !password || !passwordConfirm) { //перевірка на порожні поля
         showError('Будь ласка, заповніть всі поля', errorDiv, successDiv);
         return;
     }
     
-    if (password !== passwordConfirm) {
+    if (password !== passwordConfirm) { 
         showError('Паролі не співпадають', errorDiv, successDiv);
         return;
     }
@@ -92,20 +92,20 @@ async function handleRegister(event) {
     }
     
     try {
-        const users = getStoredUsers();
+        const users = getStoredUsers(); //отримуєм список збережених користувачів
         
-        if (users.some(u => u.username === username)) {
+        if (users.some(u => u.username === username)) { //Перевірка, чи логін вже існує
             showError('Користувач з таким логіном вже існує', errorDiv, successDiv); 
             return;
         }
         
-        const newUser = {
+        const newUser = { //створення нового користувача
             username: username,
             password: password,
             registrationDate: new Date().toISOString()
         };
         
-        users.push(newUser);
+        users.push(newUser); //Додавання користувача і збереження
         setStoredUsers(users); // Використовуємо експортовану функцію
         
         showSuccess('Реєстрація успішна! Тепер ви можете увійти в систему', errorDiv, successDiv);
