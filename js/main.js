@@ -335,8 +335,8 @@ grid: () => {
     const cellPattern = (cellX + cellY) % 2; // Шахматний патерн для різноманітності
     
     return cellPattern === 0 ?
-      { primary: Math.floor(180 + nx * 75), secondary: Math.floor(180 + ny * 75) } :
-      { primary: Math.floor(150 + (1-nx) * 75), secondary: Math.floor(150 + (1-ny) * 75) };
+      { primary: Math.floor(180 + nx * 75), secondary: Math.floor(180 + ny * 75) } : //якщо клітинка парна
+      { primary: Math.floor(150 + (1-nx) * 75), secondary: Math.floor(150 + (1-ny) * 75) }; //непарна
   }
 },
     circle: () => {
